@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -95,6 +96,62 @@ func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Repo
 			}
 		},
 		"not": func(b bool) bool { return !b },
+		"passRate": func(passed, total int) float64 {
+			if total == 0 {
+				return 0
+			}
+			return float64(passed) / float64(total) * 100
+		},
+		"passCount": func(tests []testjson.TestResult) int {
+			n := 0
+			for _, t := range tests {
+				if t.Passed {
+					n++
+				}
+			}
+			return n
+		},
+		"failCount": func(tests []testjson.TestResult) int {
+			n := 0
+			for _, t := range tests {
+				if !t.Passed && !t.Skipped {
+					n++
+				}
+			}
+			return n
+		},
+		"testStatus": func(t testjson.TestResult) string {
+			switch {
+			case t.Skipped:
+				return "skip"
+			case t.Passed:
+				return "pass"
+			default:
+				return "fail"
+			}
+		},
+		"lower": strings.ToLower,
+		"isSlow": func(t testjson.TestResult) bool {
+			return t.Elapsed >= 1.0
+		},
+		"sortTests": func(tests []testjson.TestResult) []testjson.TestResult {
+			sorted := make([]testjson.TestResult, len(tests))
+			copy(sorted, tests)
+			sort.SliceStable(sorted, func(i, j int) bool {
+				// failed first, then skipped, then passed
+				statusOrder := func(t testjson.TestResult) int {
+					if !t.Passed && !t.Skipped {
+						return 0
+					}
+					if t.Skipped {
+						return 1
+					}
+					return 2
+				}
+				return statusOrder(sorted[i]) < statusOrder(sorted[j])
+			})
+			return sorted
+		},
 	}
 
 	tmpl, err := template.New("report").Funcs(funcMap).Parse(htmlTemplate)
