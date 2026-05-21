@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gocha — Test Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f0f13; color: #e2e8f0; }
+  .header { background: #1a1a2e; padding: 24px 32px; border-bottom: 1px solid #2d2d44; }
+  .header h1 { font-size: 22px; font-weight: 700; color: #a78bfa; letter-spacing: -0.5px; }
+  .header .meta { font-size: 13px; color: #64748b; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; background: #1a1a2e; border-bottom: 1px solid #2d2d44; padding: 0 32px; }
+  .tab { padding: 12px 20px; font-size: 13px; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; color: #64748b; transition: all 0.15s; }
+  .tab:hover { color: #e2e8f0; }
+  .tab.active { color: #a78bfa; border-bottom-color: #a78bfa; }
+  .panel { display: none; padding: 24px 32px; }
+  .panel.active { display: block; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: #1e1e30; border: 1px solid #2d2d44; border-radius: 8px; padding: 16px 20px; }
+  .stat-card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; margin-bottom: 6px; }
+  .stat-card .value { font-size: 28px; font-weight: 700; }
+  .pass { color: #4ade80; }
+  .fail { color: #f87171; }
+  .skip { color: #94a3b8; }
+  .cov-high { color: #4ade80; }
+  .cov-mid { color: #facc15; }
+  .cov-low { color: #f87171; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 10px 14px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; border-bottom: 1px solid #2d2d44; background: #1a1a2e; }
+  td { padding: 10px 14px; border-bottom: 1px solid #1e1e30; }
+  tr:hover td { background: #1e1e30; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge-pass { background: #052e16; color: #4ade80; }
+  .badge-fail { background: #2d0a0a; color: #f87171; }
+  .badge-skip { background: #1e293b; color: #94a3b8; }
+  .pkg-name { color: #94a3b8; font-size: 11px; }
+  .progress-bar { height: 6px; border-radius: 3px; background: #2d2d44; overflow: hidden; width: 120px; }
+  .progress-fill { height: 100%; border-radius: 3px; }
+  .section-title { font-size: 13px; font-weight: 600; color: #94a3b8; margin: 20px 0 12px; text-transform: uppercase; letter-spacing: 0.8px; }
+  .source-file { margin-bottom: 24px; background: #1a1a2e; border: 1px solid #2d2d44; border-radius: 8px; overflow: hidden; }
+  .source-file-header { padding: 10px 16px; background: #1e1e30; font-size: 12px; font-weight: 600; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; }
+  pre { font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace; font-size: 12px; line-height: 1.6; overflow-x: auto; padding: 0; }
+  .line { display: flex; }
+  .line-num { width: 48px; text-align: right; padding: 0 12px 0 0; color: #3d3d5c; user-select: none; flex-shrink: 0; }
+  .line-code { flex: 1; padding: 0 16px; white-space: pre; }
+  .covered { background: #052e16; }
+  .uncovered { background: #2d0a0a; }
+  .neutral { }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>gocha</h1>
+  <div class="meta">Generated {{.GeneratedAt}}</div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('tests')">Tests</div>
+  <div class="tab" onclick="switchTab('coverage')">Coverage</div>
+  <div class="tab" onclick="switchTab('source')">Source</div>
+</div>
+
+<!-- Tests Panel -->
+<div id="panel-tests" class="panel active">
+  <div class="summary-grid">
+    <div class="stat-card">
+      <div class="label">Total Tests</div>
+      <div class="value" style="color:#e2e8f0">{{.Stats.Total}}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Passed</div>
+      <div class="value pass">{{.Stats.Passed}}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Failed</div>
+      <div class="value fail">{{.Stats.Failed}}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Skipped</div>
+      <div class="value skip">{{.Stats.Skipped}}</div>
+    </div>
+  </div>
+  <table>
+    <thead><tr><th>Test</th><th>Package</th><th>Status</th><th>Duration</th></tr></thead>
+    <tbody>
+    {{range .Packages}}{{if not .Skipped}}{{range .Tests}}
+    <tr>
+      <td>{{.Name}}</td>
+      <td class="pkg-name">{{.Package}}</td>
+      <td>{{if .Skipped}}<span class="badge badge-skip">SKIP</span>{{else if .Passed}}<span class="badge badge-pass">PASS</span>{{else}}<span class="badge badge-fail">FAIL</span>{{end}}</td>
+      <td style="color:#64748b">{{printf "%.3fs" .Elapsed}}</td>
+    </tr>
+    {{end}}{{end}}{{end}}
+    </tbody>
+  </table>
+</div>
+
+<!-- Coverage Panel -->
+<div id="panel-coverage" class="panel">
+  <div class="summary-grid">
+    <div class="stat-card">
+      <div class="label">Total Coverage</div>
+      <div class="value {{coverClass .Coverage.Total}}">{{printf "%.1f%%" .Coverage.Total}}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Files</div>
+      <div class="value" style="color:#e2e8f0">{{len .Coverage.Files}}</div>
+    </div>
+  </div>
+  <table>
+    <thead><tr><th>File</th><th>Coverage</th><th>Statements</th><th></th></tr></thead>
+    <tbody>
+    {{range .Coverage.Files}}
+    <tr>
+      <td>{{.FileName}}</td>
+      <td class="{{coverClass .Percent}}">{{printf "%.1f%%" .Percent}}</td>
+      <td style="color:#64748b">{{.Covered}}/{{.Total}}</td>
+      <td>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:{{printf "%.1f" .Percent}}%;background:{{coverColor .Percent}}"></div>
+        </div>
+      </td>
+    </tr>
+    {{end}}
+    </tbody>
+  </table>
+</div>
+
+<!-- Source Panel -->
+<div id="panel-source" class="panel">
+  {{range .SourceFiles}}
+  <div class="source-file">
+    <div class="source-file-header">
+      <span>{{.Name}}</span>
+      <span class="{{coverClass .Percent}}">{{printf "%.1f%%" .Percent}}</span>
+    </div>
+    <pre>{{range .Lines}}<div class="line {{.Class}}"><span class="line-num">{{.Number}}</span><span class="line-code">{{.Code}}</span></div>{{end}}</pre>
+  </div>
+  {{end}}
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+</script>
+</body>
+</html>
