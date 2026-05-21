@@ -1,0 +1,27 @@
+{"Time":"2026-05-21T13:42:06.947065939+07:00","Action":"start","Package":"go-test-coverage-demo"}
+{"Time":"2026-05-21T13:42:06.947415274+07:00","Action":"output","Package":"go-test-coverage-demo","Output":"?   \tgo-test-coverage-demo\t[no test files]\n"}
+{"Time":"2026-05-21T13:42:06.947426203+07:00","Action":"skip","Package":"go-test-coverage-demo","Elapsed":0}
+{"Time":"2026-05-21T13:42:07.079631864+07:00","Action":"start","Package":"go-test-coverage-demo/calc"}
+{"Time":"2026-05-21T13:42:07.081351058+07:00","Action":"run","Package":"go-test-coverage-demo/calc","Test":"TestAdd"}
+{"Time":"2026-05-21T13:42:07.081370308+07:00","Action":"output","Package":"go-test-coverage-demo/calc","Test":"TestAdd","Output":"=== RUN   TestAdd\n"}
+{"Time":"2026-05-21T13:42:07.081411694+07:00","Action":"output","Package":"go-test-coverage-demo/calc","Test":"TestAdd","Output":"--- PASS: TestAdd (0.00s)\n"}
+{"Time":"2026-05-21T13:42:07.081416801+07:00","Action":"pass","Package":"go-test-coverage-demo/calc","Test":"TestAdd","Elapsed":0}
+{"Time":"2026-05-21T13:42:07.081420374+07:00","Action":"run","Package":"go-test-coverage-demo/calc","Test":"TestSub"}
+{"Time":"2026-05-21T13:42:07.08142202+07:00","Action":"output","Package":"go-test-coverage-demo/calc","Test":"TestSub","Output":"=== RUN   TestSub\n"}
+{"Time":"2026-05-21T13:42:07.08142459+07:00","Action":"output","Package":"go-test-coverage-demo/calc","Test":"TestSub","Output":"--- PASS: TestSub (0.00s)\n"}
+{"Time":"2026-05-21T13:42:07.081427425+07:00","Action":"pass","Package":"go-test-coverage-demo/calc","Test":"TestSub","Elapsed":0}
+{"Time":"2026-05-21T13:42:07.081429027+07:00","Action":"run","Package":"go-test-coverage-demo/calc","Test":"TestMul"}
+{"Time":"2026-05-21T13:42:07.081430575+07:00","Action":"output","Package":"go-test-coverage-demo/calc","Test":"TestMul","Output":"=== RUN   TestMul\n"}
+{"Time":"2026-05-21T13:42:07.081432533+07:00","Action":"output","Package":"go-test-coverage-demo/calc","Test":"TestMul","Output":"--- PASS: TestMul (0.00s)\n"}
+{"Time":"2026-05-21T13:42:07.081434716+07:00","Action":"pass","Package":"go-test-coverage-demo/calc","Test":"TestMul","Elapsed":0}
+{"Time":"2026-05-21T13:42:07.081436147+07:00","Action":"run","Package":"go-test-coverage-demo/calc","Test":"TestDiv"}
+{"Time":"2026-05-21T13:42:07.081440045+07:00","Action":"output","Package":"go-test-coverage-demo/calc","Test":"TestDiv","Output":"=== RUN   TestDiv\n"}
+{"Time":"2026-05-21T13:42:07.08144301+07:00","Action":"output","Package":"go-test-coverage-demo/calc","Test":"TestDiv","Output":"--- PASS: TestDiv (0.00s)\n"}
+{"Time":"2026-05-21T13:42:07.081445147+07:00","Action":"pass","Package":"go-test-coverage-demo/calc","Test":"TestDiv","Elapsed":0}
+{"Time":"2026-05-21T13:42:07.081446566+07:00","Action":"run","Package":"go-test-coverage-demo/calc","Test":"TestDivByZero"}
+{"Time":"2026-05-21T13:42:07.081448076+07:00","Action":"output","Package":"go-test-coverage-demo/calc","Test":"TestDivByZero","Output":"=== RUN   TestDivByZero\n"}
+{"Time":"2026-05-21T13:42:07.08145189+07:00","Action":"output","Package":"go-test-coverage-demo/calc","Test":"TestDivByZero","Output":"--- PASS: TestDivByZero (0.00s)\n"}
+{"Time":"2026-05-21T13:42:07.08145418+07:00","Action":"pass","Package":"go-test-coverage-demo/calc","Test":"TestDivByZero","Elapsed":0}
+{"Time":"2026-05-21T13:42:07.081455681+07:00","Action":"output","Package":"go-test-coverage-demo/calc","Output":"PASS\n"}
+{"Time":"2026-05-21T13:42:07.081561279+07:00","Action":"output","Package":"go-test-coverage-demo/calc","Output":"ok  \tgo-test-coverage-demo/calc\t0.002s\n"}
+{"Time":"2026-05-21T13:42:07.081889324+07:00","Action":"pass","Package":"go-test-coverage-demo/calc","Elapsed":0.002}
