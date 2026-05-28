@@ -2,6 +2,15 @@
 
 All notable changes to gocha will be documented in this file.
 
+## [v0.4.0] - 2026-05-28
+
+### Added
+- Dark/light theme toggle in report header with 🌙/☀️ icon — preference persisted via localStorage
+- 🍵 favicon embedded as inline SVG data URI (no external file needed)
+
+### Changed
+- Light theme redesigned with lavender-tinted palette (no pure white) for reduced eye strain
+
 ## [v0.3.0] - 2026-05-28
 
 ### Added
