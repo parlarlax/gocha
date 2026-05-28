@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io"
 	"os"
+	"os/exec"
 	"runtime/debug"
 	"sort"
 	"strings"
@@ -46,6 +47,9 @@ type Data struct {
 	ProjectName string
 	Stats       Stats
 	Duration    string
+	GitBranch   string
+	GitCommit   string
+	GitDirty    bool
 	Packages    []testjson.PackageResult
 	Coverage    *coverage.Report
 	SourceFiles []SourceFile
@@ -84,12 +88,17 @@ func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Repo
 		return err
 	}
 
+	branch, commit, dirty := gitInfo()
+
 	data := Data{
 		GeneratedAt: time.Now().Format("2006-01-02 15:04:05"),
 		Version:     buildVersion(),
 		ProjectName: projectName,
 		Stats:       stats,
 		Duration:    formatDuration(duration),
+		GitBranch:   branch,
+		GitCommit:   commit,
+		GitDirty:    dirty,
 		Packages:    packages,
 		Coverage:    cov,
 		SourceFiles: sourceFiles,
@@ -190,6 +199,21 @@ func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Repo
 	}
 
 	return tmpl.Execute(w, data)
+}
+
+func gitInfo() (branch, commit string, dirty bool) {
+	branch = runGit("rev-parse", "--abbrev-ref", "HEAD")
+	commit = runGit("rev-parse", "--short", "HEAD")
+	dirty = runGit("status", "--porcelain") != ""
+	return
+}
+
+func runGit(args ...string) string {
+	out, err := exec.Command("git", args...).Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(out))
 }
 
 func formatDuration(d time.Duration) string {

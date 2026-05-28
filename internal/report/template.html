@@ -74,6 +74,10 @@
   .brand-tagline { font-size: 12px; color: var(--text-dim); margin-left: 42px; }
   .brand-project { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-left: 42px; margin-top: 4px; display: flex; align-items: center; gap: 8px; }
   .brand-project::before { content: ''; display: inline-block; width: 3px; height: 14px; background: var(--accent); border-radius: 2px; flex-shrink: 0; }
+  .brand-git { font-size: 12px; color: var(--text-dim); margin-left: 42px; margin-top: 3px; display: flex; align-items: center; gap: 8px; }
+  .git-branch { display: inline-flex; align-items: center; gap: 4px; }
+  .git-commit { font-family: "JetBrains Mono", "Fira Code", monospace; font-size: 11px; background: var(--bg-inset); border: 1px solid var(--border); border-radius: 3px; padding: 1px 6px; }
+  .git-dirty { color: var(--slow); font-size: 10px; font-weight: 600; }
   .header-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
   .header-meta-top { display: flex; align-items: center; gap: 8px; }
   .github-link { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-dim); text-decoration: none; transition: color 0.15s; }
@@ -210,6 +214,7 @@
       </div>
       <div class="brand-tagline">Go test report generator</div>
       {{if .ProjectName}}<div class="brand-project">{{.ProjectName}}</div>{{end}}
+      {{if .GitBranch}}<div class="brand-git"><span class="git-branch">⎇ {{.GitBranch}}</span>{{if .GitCommit}}<span class="git-commit">{{.GitCommit}}{{if .GitDirty}} <span class="git-dirty">+dirty</span>{{end}}</span>{{end}}</div>{{end}}
     </div>
     <div class="header-meta">
       <div class="header-meta-top">
