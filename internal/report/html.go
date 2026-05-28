@@ -41,13 +41,14 @@ type SourceFile struct {
 type Data struct {
 	GeneratedAt string
 	Version     string
+	ProjectName string
 	Stats       Stats
 	Packages    []testjson.PackageResult
 	Coverage    *coverage.Report
 	SourceFiles []SourceFile
 }
 
-func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Report) error {
+func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Report, projectName string) error {
 	stats := Stats{}
 	for _, pkg := range packages {
 		for _, t := range pkg.Tests {
@@ -71,6 +72,7 @@ func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Repo
 	data := Data{
 		GeneratedAt: time.Now().Format("2006-01-02 15:04:05"),
 		Version:     buildVersion(),
+		ProjectName: projectName,
 		Stats:       stats,
 		Packages:    packages,
 		Coverage:    cov,

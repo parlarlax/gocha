@@ -2,6 +2,13 @@
 
 All notable changes to gocha will be documented in this file.
 
+## [v0.5.0] - 2026-05-28
+
+### Added
+- Project name shown in report header with purple accent bar
+- Auto-detected from `go.mod` (last module path segment) by default
+- `-title` flag to override with a custom project name
+
 ## [v0.4.0] - 2026-05-28
 
 ### Added

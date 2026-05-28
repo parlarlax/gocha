@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/parlarlax/gocha/internal/coverage"
 	"github.com/parlarlax/gocha/internal/report"
@@ -15,6 +16,7 @@ import (
 func main() {
 	coverFlag := flag.String("cover", "", "path to coverage profile (consumer mode only)")
 	outFlag := flag.String("o", "gocha-report.html", "output HTML file")
+	titleFlag := flag.String("title", "", "project name shown in report header (default: auto-detect from go.mod)")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `gocha — Go test reporter
 
@@ -30,6 +32,7 @@ Examples:
   gocha -- ./...
   gocha -- -race -timeout 60s ./...
   go test -json -coverprofile=c.out ./... | gocha -cover c.out
+  go test -json ./... | gocha -title "My App"
 `)
 	}
 	flag.Parse()
@@ -62,7 +65,12 @@ Examples:
 		}
 	}
 
-	if err := writeReport(*outFlag, packages, covReport); err != nil {
+	title := *titleFlag
+	if title == "" {
+		title = detectTitle()
+	}
+
+	if err := writeReport(*outFlag, packages, covReport, title); err != nil {
 		fmt.Fprintf(os.Stderr, "gocha: %v\n", err)
 		os.Exit(1)
 	}
@@ -109,11 +117,27 @@ func runTests(args []string, _ string) ([]testjson.PackageResult, *coverage.Repo
 	return packages, covReport, runErr
 }
 
-func writeReport(outFile string, packages []testjson.PackageResult, covReport *coverage.Report) error {
+func writeReport(outFile string, packages []testjson.PackageResult, covReport *coverage.Report, title string) error {
 	out, err := os.Create(outFile)
 	if err != nil {
 		return fmt.Errorf("create output: %w", err)
 	}
 	defer out.Close()
-	return report.Generate(out, packages, covReport)
+	return report.Generate(out, packages, covReport, title)
+}
+
+func detectTitle() string {
+	data, err := os.ReadFile("go.mod")
+	if err != nil {
+		return ""
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "module ") {
+			mod := strings.TrimSpace(strings.TrimPrefix(line, "module "))
+			parts := strings.Split(mod, "/")
+			return parts[len(parts)-1]
+		}
+	}
+	return ""
 }
