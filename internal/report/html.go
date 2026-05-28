@@ -19,6 +19,8 @@ import (
 //go:embed template.html
 var htmlTemplate string
 
+const topSlowestN = 10
+
 type Stats struct {
 	Total   int
 	Passed  int
@@ -43,13 +45,16 @@ type Data struct {
 	Version     string
 	ProjectName string
 	Stats       Stats
+	Duration    string
 	Packages    []testjson.PackageResult
 	Coverage    *coverage.Report
 	SourceFiles []SourceFile
+	Slowest     []testjson.TestResult
 }
 
-func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Report, projectName string) error {
+func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Report, projectName string, duration time.Duration) error {
 	stats := Stats{}
+	var allTests []testjson.TestResult
 	for _, pkg := range packages {
 		for _, t := range pkg.Tests {
 			stats.Total++
@@ -61,7 +66,17 @@ func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Repo
 			default:
 				stats.Failed++
 			}
+			if !t.Skipped {
+				allTests = append(allTests, t)
+			}
 		}
+	}
+
+	sort.Slice(allTests, func(i, j int) bool {
+		return allTests[i].Elapsed > allTests[j].Elapsed
+	})
+	if len(allTests) > topSlowestN {
+		allTests = allTests[:topSlowestN]
 	}
 
 	sourceFiles, err := buildSourceFiles(cov)
@@ -74,9 +89,11 @@ func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Repo
 		Version:     buildVersion(),
 		ProjectName: projectName,
 		Stats:       stats,
+		Duration:    formatDuration(duration),
 		Packages:    packages,
 		Coverage:    cov,
 		SourceFiles: sourceFiles,
+		Slowest:     allTests,
 	}
 
 	funcMap := template.FuncMap{
@@ -143,7 +160,6 @@ func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Repo
 			sorted := make([]testjson.TestResult, len(tests))
 			copy(sorted, tests)
 			sort.SliceStable(sorted, func(i, j int) bool {
-				// failed first, then skipped, then passed
 				statusOrder := func(t testjson.TestResult) int {
 					if !t.Passed && !t.Skipped {
 						return 0
@@ -167,6 +183,21 @@ func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Repo
 	return tmpl.Execute(w, data)
 }
 
+func formatDuration(d time.Duration) string {
+	if d <= 0 {
+		return ""
+	}
+	if d < time.Second {
+		return fmt.Sprintf("%dms", d.Milliseconds())
+	}
+	if d < time.Minute {
+		return fmt.Sprintf("%.2fs", d.Seconds())
+	}
+	m := int(d.Minutes())
+	s := d.Seconds() - float64(m)*60
+	return fmt.Sprintf("%dm %.2fs", m, s)
+}
+
 func buildSourceFiles(cov *coverage.Report) ([]SourceFile, error) {
 	if cov == nil {
 		return nil, nil
@@ -175,7 +206,6 @@ func buildSourceFiles(cov *coverage.Report) ([]SourceFile, error) {
 	var result []SourceFile
 
 	for _, fc := range cov.Files {
-		// build a map of line -> covered/uncovered
 		type lineState int
 		const (
 			stateNeutral   lineState = 0
@@ -200,10 +230,8 @@ func buildSourceFiles(cov *coverage.Report) ([]SourceFile, error) {
 			}
 		}
 
-		// try to read source file from GOPATH/module cache — best effort
 		src, err := readSourceFile(fc.FileName)
 		if err != nil {
-			// skip source view if file not readable
 			continue
 		}
 
@@ -248,12 +276,10 @@ func buildVersion() string {
 }
 
 func readSourceFile(name string) (string, error) {
-	// try relative to cwd first
 	data, err := os.ReadFile(name)
 	if err == nil {
 		return string(data), nil
 	}
-	// strip module prefix: find first path segment that looks like a dir
 	parts := strings.Split(name, "/")
 	for i := 1; i < len(parts); i++ {
 		candidate := strings.Join(parts[i:], "/")

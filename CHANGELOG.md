@@ -2,6 +2,14 @@
 
 All notable changes to gocha will be documented in this file.
 
+## [v0.6.0] - 2026-05-28
+
+### Added
+- **Failed test output** — click any failed test row to expand inline error log (captures up to 16KB tail of test output)
+- **Slowest Tests panel** — top 10 slowest non-skipped tests shown above the package list
+- **Total run duration** — wall-clock time shown in header pass-rate bar and as a stat card; computed from first/last event timestamp
+- **Markdown summary export** — `-md <path>` flag writes a PR-friendly summary (use `-md -` for stdout); includes verdict line, stats table, failed test list in `<details>`, and coverage total
+
 ## [v0.5.0] - 2026-05-28
 
 ### Added

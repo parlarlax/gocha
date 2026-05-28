@@ -104,10 +104,11 @@
   .panel.active { display: block; }
 
   /* ── Stat cards ── */
-  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
   .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; }
   .stat-card .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-dim); margin-bottom: 4px; }
   .stat-card .value { font-size: 26px; font-weight: 700; }
+  .stat-card .value-sm { font-size: 20px; font-weight: 700; }
 
   /* ── Colors ── */
   .pass { color: var(--pass); }
@@ -129,6 +130,13 @@
   .filter-btn.f-pass.active { background: var(--pass-bg); border-color: var(--pass); color: var(--pass); }
   .filter-btn.f-fail.active { background: var(--fail-bg); border-color: var(--fail); color: var(--fail); }
   .filter-btn.f-skip.active { background: var(--skip-bg); border-color: var(--skip); color: var(--skip); }
+
+  /* ── Section title ── */
+  .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-dim); font-weight: 600; margin-bottom: 10px; }
+
+  /* ── Slowest panel ── */
+  .slowest-section { margin-bottom: 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .slowest-section-header { padding: 10px 16px; border-bottom: 1px solid var(--border); }
 
   /* ── Package groups ── */
   .pkg-group { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
@@ -152,6 +160,17 @@
   .test-name-wrap { display: flex; align-items: center; gap: 6px; overflow: hidden; }
   .test-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
   .td-duration { color: var(--text-dim); font-size: 12px; }
+  .td-pkg { color: var(--text-dim); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 0; }
+
+  /* ── Failed test output expansion ── */
+  .test-row.has-output { cursor: pointer; }
+  .test-row.has-output:hover td { background: var(--fail-bg) !important; }
+  .output-caret { font-size: 9px; color: var(--fail); opacity: 0.7; transition: transform 0.15s; display: inline-block; flex-shrink: 0; }
+  .test-row.output-open .output-caret { transform: rotate(90deg); }
+  .output-row { display: none; }
+  .output-row.visible { display: table-row; }
+  .output-row td { padding: 0; border-bottom: 1px solid var(--border); }
+  .test-output { padding: 10px 16px 10px 30px; font-family: "JetBrains Mono", "Fira Code", monospace; font-size: 12px; line-height: 1.6; max-height: 360px; overflow-y: auto; color: var(--fail); background: var(--fail-bg); white-space: pre-wrap; word-break: break-word; }
 
   /* ── Badges ── */
   .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
@@ -210,7 +229,7 @@
   <div class="pass-bar-wrap">
     <div class="pass-bar-label">
       <span>Pass rate</span>
-      <strong>{{.Stats.Passed}}/{{.Stats.Total}} passed{{if gt .Stats.Failed 0}} · {{.Stats.Failed}} failed{{end}}</strong>
+      <strong>{{.Stats.Passed}}/{{.Stats.Total}} passed{{if gt .Stats.Failed 0}} · {{.Stats.Failed}} failed{{end}}{{if .Duration}} · {{.Duration}}{{end}}</strong>
     </div>
     <div class="pass-bar">
       <div class="pass-bar-fill {{if gt .Stats.Failed 0}}bar-fail{{else}}bar-pass{{end}}" style="width:{{passRate .Stats.Passed .Stats.Total}}%"></div>
@@ -251,7 +270,32 @@
       <div class="label">Skipped</div>
       <div class="value skip">{{.Stats.Skipped}}</div>
     </div>
+    {{if .Duration}}
+    <div class="stat-card">
+      <div class="label">Duration</div>
+      <div class="value-sm" style="color:var(--text-muted);padding-top:4px">{{.Duration}}</div>
+    </div>
+    {{end}}
   </div>
+
+  <!-- Slowest tests -->
+  {{if .Slowest}}
+  <div class="slowest-section">
+    <div class="slowest-section-header"><span class="section-title">Slowest Tests</span></div>
+    <table>
+      <thead><tr><th>Test</th><th>Package</th><th style="width:110px">Duration</th></tr></thead>
+      <tbody>
+      {{range .Slowest}}
+      <tr>
+        <td class="td-test" title="{{.Name}}"><div class="test-name-wrap"><span class="test-name-text">{{.Name}}</span>{{if isSlow .}}<span class="badge badge-slow">⚡ slow</span>{{end}}</div></td>
+        <td class="td-pkg" title="{{.Package}}">{{.Package}}</td>
+        <td class="td-duration">{{printf "%.3fs" .Elapsed}}</td>
+      </tr>
+      {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{end}}
 
   <!-- Search + filter -->
   <div class="toolbar">
@@ -283,11 +327,22 @@
         <thead><tr><th>Test</th><th style="width:90px">Status</th><th style="width:110px">Duration</th></tr></thead>
         <tbody>
         {{range sortTests .Tests}}
-        <tr class="test-row" data-status="{{testStatus .}}" data-name="{{lower .Name}}">
-          <td class="td-test" title="{{.Name}}"><div class="test-name-wrap"><span class="test-name-text">{{.Name}}</span>{{if isSlow .}}<span class="badge badge-slow">⚡ slow</span>{{end}}</div></td>
+        <tr class="test-row{{if and (not .Passed) (not .Skipped) .Output}} has-output{{end}}" data-status="{{testStatus .}}" data-name="{{lower .Name}}"{{if and (not .Passed) (not .Skipped) .Output}} onclick="toggleOutput(this)"{{end}}>
+          <td class="td-test" title="{{.Name}}">
+            <div class="test-name-wrap">
+              {{if and (not .Passed) (not .Skipped) .Output}}<span class="output-caret">▶</span>{{end}}
+              <span class="test-name-text">{{.Name}}</span>
+              {{if isSlow .}}<span class="badge badge-slow">⚡ slow</span>{{end}}
+            </div>
+          </td>
           <td>{{if .Skipped}}<span class="badge badge-skip">SKIP</span>{{else if .Passed}}<span class="badge badge-pass">PASS</span>{{else}}<span class="badge badge-fail">FAIL</span>{{end}}</td>
           <td class="td-duration">{{printf "%.3fs" .Elapsed}}</td>
         </tr>
+        {{if and (not .Passed) (not .Skipped) .Output}}
+        <tr class="output-row">
+          <td colspan="3"><pre class="test-output">{{.Output}}</pre></td>
+        </tr>
+        {{end}}
         {{end}}
         </tbody>
       </table>
@@ -368,6 +423,13 @@ function togglePkg(group) {
   group.classList.toggle('collapsed');
 }
 
+function toggleOutput(row) {
+  var next = row.nextElementSibling;
+  if (!next || !next.classList.contains('output-row')) return;
+  var open = next.classList.toggle('visible');
+  row.classList.toggle('output-open', open);
+}
+
 function setFilter(f, btn) {
   currentFilter = f;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -389,6 +451,12 @@ function filterTests() {
       var matchSearch = !query || name.includes(query);
       var show = matchFilter && matchSearch;
       row.style.display = show ? '' : 'none';
+      // keep output row in sync: hide when test row hides, preserve open state when shown
+      var next = row.nextElementSibling;
+      if (next && next.classList.contains('output-row')) {
+        if (!show) next.style.display = 'none';
+        else next.style.display = next.classList.contains('visible') ? '' : 'none';
+      }
       if (show) { groupVisible = true; anyVisible = true; }
     });
     group.style.display = groupVisible ? '' : 'none';
