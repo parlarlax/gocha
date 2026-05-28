@@ -2,6 +2,16 @@
 
 All notable changes to gocha will be documented in this file.
 
+## [v0.3.0] - 2026-05-28
+
+### Added
+- Branded report header: 🍵 icon, tagline "Go test report generator", GitHub link, version badge
+- Version auto-detected from build info (`runtime/debug`) — shows tagged version when installed via `go install`
+
+### Changed
+- Test name column now truncates long names with ellipsis; hover shows full name via native tooltip
+- Status and Duration columns fixed-width so columns stay aligned across all package tables
+
 ## [v0.2.0] - 2026-05-21
 
 ### Added

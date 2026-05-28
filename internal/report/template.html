@@ -11,8 +11,16 @@
   /* ── Header ── */
   .header { background: #1a1a2e; padding: 20px 32px 0; border-bottom: 1px solid #2d2d44; }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .header h1 { font-size: 22px; font-weight: 700; color: #a78bfa; letter-spacing: -0.5px; }
-  .header .meta { font-size: 12px; color: #64748b; }
+  .brand { display: flex; flex-direction: column; gap: 3px; }
+  .brand-name-row { display: flex; align-items: center; gap: 10px; }
+  .brand-icon { font-size: 22px; line-height: 1; }
+  .brand-name { font-size: 22px; font-weight: 700; color: #a78bfa; letter-spacing: -0.5px; }
+  .brand-version { font-size: 11px; font-weight: 500; background: #a78bfa22; color: #a78bfa; border: 1px solid #a78bfa44; border-radius: 4px; padding: 2px 7px; }
+  .brand-tagline { font-size: 12px; color: #64748b; margin-left: 42px; }
+  .header-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .github-link { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; text-decoration: none; transition: color 0.15s; }
+  .github-link:hover { color: #a78bfa; }
+  .meta { font-size: 12px; color: #64748b; }
   .pass-bar-wrap { margin-bottom: 0; }
   .pass-bar-label { font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: flex; justify-content: space-between; }
   .pass-bar-label strong { color: #e2e8f0; }
@@ -68,13 +76,16 @@
   .pkg-stats { display: flex; gap: 8px; font-size: 11px; }
 
   /* ── Table ── */
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
   th { text-align: left; padding: 8px 14px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: #3d3d5c; border-bottom: 1px solid #2d2d44; background: #16161f; }
   td { padding: 9px 14px; border-bottom: 1px solid #1a1a2e; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: #1e1e30; }
   .test-row[data-status="fail"] td:first-child { border-left: 2px solid #f87171; }
   .test-row[data-status="pass"] td:first-child { border-left: 2px solid #1e1e30; }
+  .td-test { max-width: 0; }
+  .test-name-wrap { display: flex; align-items: center; gap: 6px; overflow: hidden; }
+  .test-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
 
   /* ── Badges ── */
   .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
@@ -105,8 +116,21 @@
 <!-- Header with pass rate bar -->
 <div class="header">
   <div class="header-top">
-    <h1>gocha</h1>
-    <span class="meta">{{.GeneratedAt}}</span>
+    <div class="brand">
+      <div class="brand-name-row">
+        <span class="brand-icon">🍵</span>
+        <span class="brand-name">gocha</span>
+        <span class="brand-version">{{.Version}}</span>
+      </div>
+      <div class="brand-tagline">Go test report generator</div>
+    </div>
+    <div class="header-meta">
+      <a href="https://github.com/parlarlax/gocha" class="github-link" target="_blank" rel="noopener noreferrer">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        parlarlax/gocha
+      </a>
+      <span class="meta">{{.GeneratedAt}}</span>
+    </div>
   </div>
   {{if gt .Stats.Total 0}}
   <div class="pass-bar-wrap">
@@ -182,11 +206,11 @@
     </div>
     <div class="pkg-body">
       <table>
-        <thead><tr><th>Test</th><th>Status</th><th>Duration</th></tr></thead>
+        <thead><tr><th>Test</th><th style="width:90px">Status</th><th style="width:110px">Duration</th></tr></thead>
         <tbody>
         {{range sortTests .Tests}}
         <tr class="test-row" data-status="{{testStatus .}}" data-name="{{lower .Name}}">
-          <td>{{.Name}}{{if isSlow .}}<span class="badge badge-slow">⚡ slow</span>{{end}}</td>
+          <td class="td-test" title="{{.Name}}"><div class="test-name-wrap"><span class="test-name-text">{{.Name}}</span>{{if isSlow .}}<span class="badge badge-slow">⚡ slow</span>{{end}}</div></td>
           <td>{{if .Skipped}}<span class="badge badge-skip">SKIP</span>{{else if .Passed}}<span class="badge badge-pass">PASS</span>{{else}}<span class="badge badge-fail">FAIL</span>{{end}}</td>
           <td style="color:#64748b;font-size:12px">{{printf "%.3fs" .Elapsed}}</td>
         </tr>

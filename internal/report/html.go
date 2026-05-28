@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io"
 	"os"
+	"runtime/debug"
 	"sort"
 	"strings"
 	"time"
@@ -39,6 +40,7 @@ type SourceFile struct {
 
 type Data struct {
 	GeneratedAt string
+	Version     string
 	Stats       Stats
 	Packages    []testjson.PackageResult
 	Coverage    *coverage.Report
@@ -68,6 +70,7 @@ func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Repo
 
 	data := Data{
 		GeneratedAt: time.Now().Format("2006-01-02 15:04:05"),
+		Version:     buildVersion(),
 		Stats:       stats,
 		Packages:    packages,
 		Coverage:    cov,
@@ -229,6 +232,17 @@ func buildSourceFiles(cov *coverage.Report) ([]SourceFile, error) {
 	}
 
 	return result, nil
+}
+
+func buildVersion() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "dev"
+	}
+	if v := info.Main.Version; v != "" && v != "(devel)" {
+		return v
+	}
+	return "dev"
 }
 
 func readSourceFile(name string) (string, error) {
