@@ -289,7 +289,7 @@
       <tr>
         <td class="td-test" title="{{.Name}}"><div class="test-name-wrap"><span class="test-name-text">{{.Name}}</span>{{if isSlow .}}<span class="badge badge-slow">⚡ slow</span>{{end}}</div></td>
         <td class="td-pkg" title="{{.Package}}">{{.Package}}</td>
-        <td class="td-duration">{{printf "%.3fs" .Elapsed}}</td>
+        <td class="td-duration">{{fmtElapsed .Elapsed}}</td>
       </tr>
       {{end}}
       </tbody>
@@ -336,7 +336,7 @@
             </div>
           </td>
           <td>{{if .Skipped}}<span class="badge badge-skip">SKIP</span>{{else if .Passed}}<span class="badge badge-pass">PASS</span>{{else}}<span class="badge badge-fail">FAIL</span>{{end}}</td>
-          <td class="td-duration">{{printf "%.3fs" .Elapsed}}</td>
+          <td class="td-duration">{{fmtElapsed .Elapsed}}</td>
         </tr>
         {{if and (not .Passed) (not .Skipped) .Output}}
         <tr class="output-row">

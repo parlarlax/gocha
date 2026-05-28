@@ -152,6 +152,15 @@ func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Repo
 				return "fail"
 			}
 		},
+		"fmtElapsed": func(elapsed float64) string {
+			if elapsed < 0.001 {
+				return "< 1ms"
+			}
+			if elapsed < 1.0 {
+				return fmt.Sprintf("%.0fms", elapsed*1000)
+			}
+			return fmt.Sprintf("%.3fs", elapsed)
+		},
 		"lower": strings.ToLower,
 		"isSlow": func(t testjson.TestResult) bool {
 			return t.Elapsed >= 1.0
