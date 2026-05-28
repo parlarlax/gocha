@@ -204,7 +204,8 @@ func Generate(w io.Writer, packages []testjson.PackageResult, cov *coverage.Repo
 func gitInfo() (branch, commit string, dirty bool) {
 	branch = runGit("rev-parse", "--abbrev-ref", "HEAD")
 	commit = runGit("rev-parse", "--short", "HEAD")
-	dirty = runGit("status", "--porcelain") != ""
+	cmd := exec.Command("git", "diff", "HEAD", "--quiet")
+	dirty = cmd.Run() != nil
 	return
 }
 

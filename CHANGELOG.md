@@ -2,6 +2,11 @@
 
 All notable changes to gocha will be documented in this file.
 
+## [v0.6.3] - 2026-05-28
+
+### Fixed
+- **Git dirty detection** — changed from `git status --porcelain` to `git diff HEAD --quiet` so untracked files (e.g. generated `report.html`, `coverage.out`) no longer incorrectly trigger `+dirty` in the report header
+
 ## [v0.6.0] - 2026-05-28
 
 ### Added
